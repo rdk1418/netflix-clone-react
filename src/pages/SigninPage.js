@@ -16,6 +16,10 @@ import SignFormCaptcha from "../components/SignForm/SignFormCaptcha";
 import SignFormError from "../components/SignForm/SignFormError";
 import Warning from "../components/Header/Warning";
 
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { initializeFirebase } from '../lib/firebase.prod'; // Adjust this path to where your firebase.prod.js file is located
+
+
 function SigninPage() {
   const history = useHistory();
   const { firebase } = useContext(FirebaseContext);
@@ -28,16 +32,23 @@ function SigninPage() {
 
   function handleSubmit(event) {
     event.preventDefault();
-
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(emailAddress, password)
-      .then(() => {
-        setEmailAddress("");
-        setPassword("");
-        history.push("/browse");
-      })
-      .catch((error) => setError(error.message));
+  
+initializeFirebase()
+.then(({ auth }) => {
+  // Firebase is initialized, now use auth to sign in
+  return signInWithEmailAndPassword(auth, emailAddress, password);
+})
+.then(() => {
+  // Signed in successfully
+  setEmailAddress("");
+  setPassword("");
+  history.push("/browse");
+})
+.catch((error) => {
+  // Handle any errors during initialization or sign-in
+  setError(error.message);
+});
+  
   }
 
   return (

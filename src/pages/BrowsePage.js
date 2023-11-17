@@ -24,6 +24,7 @@ import FooterCompound from "../compounds/FooterCompound";
 
 function BrowsePage() {
   let { series } = useContent("series");
+  console.log(series)
   series = [
     {
       title: "Documentaries",

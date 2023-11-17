@@ -15,6 +15,9 @@ import SignFormLink from "../components/SignForm/SignFormLink";
 import SignFormCaptcha from "../components/SignForm/SignFormCaptcha";
 import SignFormError from "../components/SignForm/SignFormError";
 import Warning from "../components/Header/Warning";
+import { initializeFirebase } from '../lib/firebase.prod'; // Update this path to the correct location of your firebase.prod.js file
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+
 
 function SignupPage() {
   const history = useHistory();
@@ -30,22 +33,29 @@ function SignupPage() {
   function handleSubmit(event) {
     event.preventDefault();
 
-    firebase
-      .auth()
-      .createUserWithEmailAndPassword(emailAddress, password)
-      .then((result) =>
-        result.user
-          .updateProfile({
-            displayName: firstName,
-          })
-          .then(() => {
-            setFirstName("");
-            setEmailAddress("");
-            setPassword("");
-            history.push("/browse");
-          })
-      )
-      .catch((error) => setError(error.message));
+
+    initializeFirebase()
+    .then(({ auth }) => {
+      // Firebase is initialized, now create user
+      return createUserWithEmailAndPassword(auth, emailAddress, password);
+    })
+    .then((result) => {
+      // User created, now update the user's profile
+      return updateProfile(result.user, {
+        displayName: firstName,
+      });
+    })
+    .then(() => {
+      // Profile updated, clear state, and redirect
+      setFirstName('');
+      setEmailAddress('');
+      setPassword('');
+      history.push('/browse');
+    })
+    .catch((error) => {
+      // Handle any errors
+      setError(error.message);
+    });
   }
 
   return (
